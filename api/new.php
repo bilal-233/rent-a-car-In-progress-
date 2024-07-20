@@ -42,14 +42,16 @@ switch ($method) {
         break;
     case 'POST':
         $data = json_decode(file_get_contents('php://input'), true);
-        if (isset($data['make'], $data['model'], $data['year'], $data['color'], $data['price'], $data['availability'])) {
-            $make = $data['make'];
-            $model = $data['model'];
-            $year = $data['year'];
-            $color = $data['color'];
-            $price = $data['price'];
-            $availability = $data['availability'];
-            $sql = "INSERT INTO cars (make, model, year, color, price, availability) VALUES ('$make', '$model', $year, '$color', $price, $availability)";
+        if (isset($data['carId'], $data['mileage'], $data['day'], $data['userId'], $data['users'], $data['carsId'], $data['cars'],$data['cost'] )) {
+            $carId = $data['carId'];
+            $mileage = $data['mileage'];
+            $day = $data['day'];
+            $userId = $data['userId'];
+            $users = $data['users'];
+            $carId = $data['carId'];
+            $cars = $data['cars'];
+            $cost = $data['cost'];
+            $sql = "INSERT INTO cars (carsId, mileage, day, userId, users, carsId , cars, cost) VALUES ('$carId''$mileage', '$day', $userId, '$users', $carId, $cars '$cost')";
             if ($conn->query($sql) === TRUE) {
                 echo json_encode(array("message" => "New car added successfully"));
             } else {
@@ -65,15 +67,16 @@ switch ($method) {
             // Debugging: Print received data
             error_log("Received PUT data: " . print_r($data, true));
     
-            if (isset($data['id'], $data['make'], $data['model'], $data['year'], $data['color'], $data['price'], $data['availability'])) {
-                $id = intval($data['id']);
-                $make = $data['make'];
-                $model = $data['model'];
-                $year = $data['year'];
-                $color = $data['color'];
-                $price = $data['price'];
-                $availability = $data['availability'];
-                $sql = "UPDATE cars SET make='$make', model='$model', year=$year, color='$color', price=$price, availability=$availability WHERE id=$id";
+            if (isset($data['carId'], $data['mileage'], $data['day'], $data['userId'], $data['users'], $data['carId'], $data['cars'], $data['cost'])) {
+                $carid = intval($data['carid']);
+                $mileage = $data['mileage'];
+                $day = $data['day'];
+                $userId = $data['userId'];
+                $users = $data['users'];
+                $carsId = $data['carsId'];
+                $cars = $data['cars'];
+                $cost = $data['cost'];
+                $sql = "UPDATE carsId SET mileage='$mileage', day='$day', userId=$userId, users='$users', carsId=$carsId, cars=$cars WHERE cost=$cost";
     
                 // Debugging: Print SQL query
                 error_log("Generated SQL query: " . $sql);
