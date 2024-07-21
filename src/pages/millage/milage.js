@@ -1,107 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom';
-import './car.css';
+import { Link, useNavigate } from 'react-router-dom';
+import './millage.css'; // Import the CSS file
 
-const BookCar = () => {
-    const { carId } = useParams();
-    const [mileage, setMileage] = useState('');
-    const [day, setDay] = useState('');
-    const [userId, setUserId] = useState('');
-    const [users, setUsers] = useState([]);
-    const [carsId, setCarId] = useState(carId || '');
-    const [cars, setCars] = useState([]);
-    const [cost, setCost] = useState(0);
+const MileageList = () => {
+    const [mileages, setMileages] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost/api/api.php')
+        axios.get('http://localhost/api/new.php')
             .then(response => {
-                setUsers(response.data);
+                console.log('API response:', response.data); // Log API response
+                setMileages(response.data);
             })
             .catch(error => {
-                console.error('There was an error fetching the users data!', error);
+                console.error('There was an error fetching the data!', error);
             });
     }, []);
 
-    useEffect(() => {
-        axios.get('http://localhost/api/cars.php')
-            .then(response => {
-                setCars(response.data);
-            })
-            .catch(error => {
-                console.error('There was an error fetching the cars data!', error);
-            });
-    }, []);
-
-    useEffect(() => {
-        const selectedCar = cars.find(car => car.id === carsId);
-        if (selectedCar && day) {
-            setCost(selectedCar.price * day);
-        }
-    }, [carsId, day, cars]);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        axios.post('http://localhost/api/new.php', {
-            carId: carsId,
-            userId,
-            day,
-            mileage,
-            cost
-        })
-        .then(response => {
-            alert('Car booked and mileage recorded successfully');
-        })
-        .catch(error => {
-            console.error('There was an error booking the car!', error);
-        });
-    }
+    const handleEdit = (id) => {
+        sessionStorage.setItem('editMileageId', id);
+        navigate('/mileageedit');
+    };
 
     return (
         <div className="container">
-            <h1 className="header">Book Car and Record Mileage</h1>
-            <form onSubmit={handleSubmit} className="form">
-                <label>
-                    User:
-                    <select value={userId} onChange={(e) => setUserId(e.target.value)} required>
-                        <option value="">Select a user</option>
-                        {users.map(user => (
-                            <option key={user.id} value={user.id}>
-                                {user.name}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label>
-                    Car:
-                    <select value={carsId} onChange={(e) => setCarId(e.target.value)} required>
-                        <option value="">Select a car</option>
-                        {cars.map(car => (
-                            <option key={car.id} value={car.id}>
-                                {car.model}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                
-                <label>
-                    Day:
-                    <input type="number" value={day} onChange={(e) => setDay(e.target.value)} required />
-                </label>
-                <label>
-                    Mileage:
-                    <input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} required />
-                </label>
-                <label>
-                    Cost:
-                    <input type="number" value={cost} readOnly />
-                </label>
-                <button type="submit" className="button">Submit</button>
-            </form>
-            <Link to="../cars/cars.js" className="button">Back to Car List</Link>
+            <h1 className="header">Mileages</h1>
+            <Link to="/mileageadd" className="button add-button">Add Mileage</Link>
+            <table className="mileage-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Car ID</th>
+                        <th>Day</th>
+                        <th>Mileage</th>
+                        <th>Total Cost</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {mileages.length === 0 ? (
+                        <tr>
+                            <td colSpan="6">No mileages found</td>
+                        </tr>
+                    ) : (
+                        mileages.map(mileage => (
+                            <tr key={mileage.id} className="mileage-row">
+                                <td>{mileage.user_id}</td>
+                                <td>{mileage.car_id}</td>
+                                <td>{mileage.day}</td>
+                                <td>{mileage.mileage}</td>
+                                <td>{mileage.total_cost}</td>
+                                <td>
+                                    <button onClick={() => handleEdit(mileage.id)} className="button edit-button">Edit</button>
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
         </div>
     );
 }
 
-export default BookCar;
+export default MileageList;
