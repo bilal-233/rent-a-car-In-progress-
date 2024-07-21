@@ -1,125 +1,113 @@
-// // src/pages/cars/caredit.js
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import './millage.css'; // Import the CSS file
 
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import { useNavigate, useParams } from 'react-router-dom';
-// import './car.css';  // Import the CSS file
+const MileageEdit = () => {
+    const [userId, setUserId] = useState('');
+    const [carId, setCarId] = useState('');
+    const [day, setDay] = useState('');
+    const [mileage, setMileage] = useState('');
+    const [totalCost, setTotalCost] = useState('');
+    const [users, setUsers] = useState([]);
+    const [cars, setCars] = useState([]);
+    const navigate = useNavigate();
+    const Id = sessionStorage.getItem('Id');
 
-// const CarEdit = () => {
-//     const { id } = useParams();
-//     const [car, setCar] = useState(null);
-//     const [make, setMake] = useState('');
-//     const [model, setModel] = useState('');
-//     const [year, setYear] = useState('');
-//     const [color, setColor] = useState('');
-//     const [price, setPrice] = useState('');
-//     const [availability, setAvailability] = useState(true);
-//     const navigate = useNavigate();
+    useEffect(() => {
+        axios.get('http://localhost/api/mileage.php?id=' + Id)
+            .then(response => {
+                const mileage = response.data;
+                setUserId(mileage.user_id);
+                setCarId(mileage.car_id);
+                setDay(mileage.day);
+                setMileage(mileage.mileage);
+                setTotalCost(mileage.total_cost);
+            })
+            .catch(error => {
+                console.error('There was an error fetching the mileage data!', error);
+            });
 
-//     useEffect(() => {
-//         axios.get(`http://localhost/api/cars.php?id=${id}`)
-//             .then(response => {
-//                 const carData = response.data;
-//                 setCar(carData);
-//                 setMake(carData.make || ''); // Ensure fallback to empty string if null or undefined
-//                 setModel(carData.model || '');
-//                 setYear(carData.year || '');
-//                 setColor(carData.color || '');
-//                 setPrice(carData.price || '');
-//                 setAvailability(carData.availability || true); // Ensure fallback to true if null or undefined
-//             })
-//             .catch(error => {
-//                 console.error('There was an error fetching the car data!', error);
-//             });
-//     }, [id]);
+        axios.get('http://localhost/api/api.php')
+            .then(response => {
+                setUsers(response.data);
+            })
+            .catch(error => {
+                console.error('There was an error fetching the users data!', error);
+            });
 
-//     const handleEditCar = () => {
-//         axios.put(`http://localhost/api/cars.php`, {
-//             id,
-//             make,
-//             model,
-//             year,
-//             color,
-//             price,
-//             availability
-//         })
-//         .then(response => {
-//             console.log('Car updated successfully:', response.data);
-//             navigate('/cars');
-//         })
-//         .catch(error => {
-//             console.error('There was an error updating the car!', error);
-//         });
-//     };
+        axios.get('http://localhost/api/cars.php')
+            .then(response => {
+                setCars(response.data);
+            })
+            .catch(error => {
+                console.error('There was an error fetching the cars data!', error);
+            });
+    }, [Id]);
 
-//     const handleDeleteCar = () => {
-//         axios.delete(`http://localhost/api/cars.php`, {
-//             data: { id }
-//         })
-//             .then(response => {
-//                 console.log('Car deleted successfully:', response.data);
-//                 navigate('/cars');
-//             })
-//             .catch(error => {
-//                 console.error('There was an error deleting the car!', error);
-//             });
-//     };
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-//     if (!car) return <div>Loading...</div>;
+        axios.put('http://localhost/api/mileage.php', {
+            id: Id,
+            userId,
+            carId,
+            day,
+            mileage,
+            totalCost
+        })
+        .then(response => {
+            alert('Mileage updated successfully');
+            navigate('/mileagelist');
+        })
+        .catch(error => {
+            console.error('There was an error updating the mileage!', error);
+        });
+    }
 
-//     return (
-//         <div className="container">
-//             <h2 className="sub-header">Edit Car</h2>
-//             <div className="form">
-//                 <input
-//                     type="text"
-//                     value={make}
-//                     onChange={e => setMake(e.target.value)}
-//                     placeholder="Make"
-//                     className="input"
-//                 />
-//                 <input
-//                     type="text"
-//                     value={model}
-//                     onChange={e => setModel(e.target.value)}
-//                     placeholder="Model"
-//                     className="input"
-//                 />
-//                 <input
-//                     type="number"
-//                     value={year}
-//                     onChange={e => setYear(e.target.value)}
-//                     placeholder="Year"
-//                     className="input"
-//                 />
-//                 <input
-//                     type="text"
-//                     value={color}
-//                     onChange={e => setColor(e.target.value)}
-//                     placeholder="Color"
-//                     className="input"
-//                 />
-//                 <input
-//                     type="number"
-//                     value={price}
-//                     onChange={e => setPrice(e.target.value)}
-//                     placeholder="Price"
-//                     className="input"
-//                 />
-//                 <label className="label">
-//                     <input
-//                         type="checkbox"
-//                         checked={availability}
-//                         onChange={e => setAvailability(e.target.checked)}
-//                         className="checkbox"
-//                     />
-//                     Available
-//                 </label>
-//                 <button onClick={handleEditCar} className="button">Save Changes</button>
-//                 <button onClick={handleDeleteCar} className="button delete-button">Delete Car</button>
-//             </div>
-//         </div>
-//     );
-// }
+    return (
+        <div className="container">
+            <h1 className="header">Edit Mileage</h1>
+            <form onSubmit={handleSubmit} className="form">
+                <label>
+                    User:
+                    <select value={userId} onChange={(e) => setUserId(e.target.value)} required>
+                        <option value="">Select a user</option>
+                        {users.map(user => (
+                            <option key={user.id} value={user.id}>
+                                {user.name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Car:
+                    <select value={carId} onChange={(e) => setCarId(e.target.value)} required>
+                        <option value="">Select a car</option>
+                        {cars.map(car => (
+                            <option key={car.id} value={car.id}>
+                                {car.model}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Day:
+                    <input type="number" value={day} onChange={(e) => setDay(e.target.value)} required />
+                </label>
+                <label>
+                    Mileage:
+                    <input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} required />
+                </label>
+                <label>
+                    Total Cost:
+                    <input type="number" value={totalCost} onChange={(e) => setTotalCost(e.target.value)} required />
+                </label>
+                <button type="submit" className="button">Submit</button>
+            </form>
+            <button onClick={() => navigate('/mileagelist')} className="button">Back to Mileage List</button>
+        </div>
+    );
+}
 
-// export default CarEdit;
+export default MileageEdit;
