@@ -1,128 +1,118 @@
-// actually i have those codes already 
-// import CarList from './pages/cars/car';
-// import CarAdd from './pages/cars/caradd';
-// import CarEdit from './pages/millage/caredit';
-// import User from './pages/user/user';
-// import Useradd from './pages/user/useradd';
-// import Useredit from './pages/user/useredit'; 
-// also with backend know i will add order and car booking to keep car rent record and millage record 
-// ChatGPT
-// It sounds like you're working on a car rental application, and you already have the code set up for importing components related to cars and users. Now, you're planning to add functionality for car booking and order management to keep track of rental records and mileage records. Here's a structured approach to integrating these new features into your application:
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import './millage.css'; // Import the CSS file
 
-// 1. Define the Components and Pages
-// You'll need to create new components and pages for managing orders and car bookings. Let's start by creating the basic structure for these components.
+const MileageEdit = () => {
+    const [userId, setUserId] = useState('');
+    const [carId, setCarId] = useState('');
+    const [day, setDay] = useState('');
+    const [mileage, setMileage] = useState('');
+    const [totalCost, setTotalCost] = useState('');
+    const [users, setUsers] = useState([]);
+    const [cars, setCars] = useState([]);
+    const navigate = useNavigate();
+    const Id = sessionStorage.getItem('editMileageId'); // Corrected sessionStorage key
 
-// Order Components:
-// OrderList: To display the list of orders.
-// OrderAdd: To add a new order.
-// OrderEdit: To edit an existing order.
-// Booking Components:
-// BookingList: To display the list of bookings.
-// BookingAdd: To add a new booking.
-// BookingEdit: To edit an existing booking.
-// 2. Create the Component Files
-// Create the following files in your project directory structure:
+    useEffect(() => {
+        if (Id) {
+            axios.get('http://localhost/api/mileage.php?id=' + Id)
+                .then(response => {
+                    const mileage = response.data;
+                    setUserId(mileage.user_id);
+                    setCarId(mileage.car_id);
+                    setDay(mileage.day);
+                    setMileage(mileage.mileage);
+                    setTotalCost(mileage.total_cost);
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the mileage data!', error);
+                });
 
-// Orders
-// src/pages/orders/OrderList.js
-// src/pages/orders/OrderAdd.js
-// src/pages/orders/OrderEdit.js
-// Bookings
-// src/pages/bookings/BookingList.js
-// src/pages/bookings/BookingAdd.js
-// src/pages/bookings/BookingEdit.js
-// 3. Implement Basic Components
-// Here's an example of how you might set up the basic structure for these components.
+            axios.get('http://localhost/api/api.php')
+                .then(response => {
+                    setUsers(response.data);
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the users data!', error);
+                });
 
-// OrderList.js
-// javascript
-// Copy code
-// import React from 'react';
+            axios.get('http://localhost/api/cars.php')
+                .then(response => {
+                    setCars(response.data);
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the cars data!', error);
+                });
+        } else {
+            console.error('No editMileageId found in sessionStorage');
+            navigate('/mileagelist');
+        }
+    }, [Id, navigate]);
 
-// const OrderList = () => {
-//     return (
-//         <div>
-//             <h1>Order List</h1>
-//             {/* Add your order list implementation here */}
-//         </div>
-//     );
-// };
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-// export default OrderList;
-// OrderAdd.js
-// javascript
-// Copy code
-// import React from 'react';
+        axios.put('http://localhost/api/mileage.php', {
+            id: Id,
+            userId,
+            carId,
+            day,
+            mileage,
+            totalCost
+        })
+        .then(response => {
+            alert('Mileage updated successfully');
+            navigate('/mileagelist');
+        })
+        .catch(error => {
+            console.error('There was an error updating the mileage!', error);
+        });
+    }
 
-// const OrderAdd = () => {
-//     return (
-//         <div>
-//             <h1>Add Order</h1>
-//             {/* Add your order add implementation here */}
-//         </div>
-//     );
-// };
+    return (
+        <div className="container">
+            <h1 className="header">Edit Mileage</h1>
+            <form onSubmit={handleSubmit} className="form">
+                <label>
+                    User:
+                    <select value={userId} onChange={(e) => setUserId(e.target.value)} required>
+                        <option value="">Select a user</option>
+                        {users.map(user => (
+                            <option key={user.id} value={user.id}>
+                                {user.name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Car:
+                    <select value={carId} onChange={(e) => setCarId(e.target.value)} required>
+                        <option value="">Select a car</option>
+                        {cars.map(car => (
+                            <option key={car.id} value={car.id}>
+                                {car.model}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Day:
+                    <input type="number" value={day} onChange={(e) => setDay(e.target.value)} required />
+                </label>
+                <label>
+                    Mileage:
+                    <input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} required />
+                </label>
+                <label>
+                    Total Cost:
+                    <input type="number" value={totalCost} onChange={(e) => setTotalCost(e.target.value)} required />
+                </label>
+                <button type="submit" className="button">Submit</button>
+            </form>
+            <button onClick={() => navigate('/mileagelist')} className="button">Back to Mileage List</button>
+        </div>
+    );
+}
 
-// export default OrderAdd;
-// OrderEdit.js
-// javascript
-// Copy code
-// import React from 'react';
-
-// const OrderEdit = () => {
-//     return (
-//         <div>
-//             <h1>Edit Order</h1>
-//             {/* Add your order edit implementation here */}
-//         </div>
-//     );
-// };
-
-// export default OrderEdit;
-// BookingList.js
-// javascript
-// Copy code
-// import React from 'react';
-
-// const BookingList = () => {
-//     return (
-//         <div>
-//             <h1>Booking List</h1>
-//             {/* Add your booking list implementation here */}
-//         </div>
-//     );
-// };
-
-// export default BookingList;
-// BookingAdd.js
-// javascript
-// Copy code
-// import React from 'react';
-
-// const BookingAdd = () => {
-//     return (
-//         <div>
-//             <h1>Add Booking</h1>
-//             {/* Add your booking add implementation here */}
-//         </div>
-//     );
-// };
-
-// export default BookingAdd;
-// BookingEdit.js
-// javascript
-// Copy code
-// import React from 'react';
-
-// const BookingEdit = () => {
-//     return (
-//         <div>
-//             <h1>Edit Booking</h1>
-//             {/* Add your booking edit implementation here */}
-//         </div>
-//     );
-// };
-
-// export default BookingEdit;
-// 4. Update the Routes
-// Add routes to your router configuration to handle these new components. Assuming you are using React Router, you might update your routes as follows:
+export default MileageEdit;
